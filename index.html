@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>QUIZ PINTAR VERSI MBI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Overlay loader -->
+<div id="overlay" class="overlay">
+  <div class="loader-box">
+    <img id="loaderLogo" src="assets/images/logo.png" alt="logo" class="loader-logo">
+    <div class="progress-bar"><div id="progressFill"></div></div>
+    <div id="progressText">0%</div>
+  </div>
+</div>
+
+<!-- Landing -->
+<main id="landing" class="landing hidden">
+  <div class="bg" id="bg" style="background-image: url('assets/images/bg.jpg')"></div>
+
+  <header class="top-area">
+    <img id="topLogo" class="top-logo" src="assets/images/logo.png" alt="logo">
+    <h1 class="holo">QUIZ PINTAR VERSI MBI</h1>
+    <p class="subtitle">Ayo uji kemampuanmu di sini</p>
+
+    <div class="controls">
+     <button id="soundToggle" class="round-btn" title="Toggle Sound"></button>
+    </div>
+
+    <div class="main-buttons">
+      <button id="startBtn" class="big-btn">AYO MULAI</button>
+      <button id="leaderBtn" class="big-btn">LEADERBOARD</button>
+      <button id="guideBtn" class="big-btn">PETUNJUK</button>
+    </div>
+
+    <div class="ad-banner">Iklan / Banner (tempat iklan)</div>
+
+    <div class="score-area">Best score: <span id="bestScore">0</span></div>
+  </header>
+</main>
+
+<script src="js/game.js"></script>
+</body>
+</html>
