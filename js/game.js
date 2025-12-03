@@ -1,9 +1,5 @@
 // QUIZ PINTAR VERSI MBI - main JS
-// This project uses simple localStorage for settings and an optional Firebase integration.
-// Placeholders:
-// - assets/images/logo-placeholder.png  (your uploaded logo)
-// - assets/images/bg-placeholder.jpg    (your uploaded background)
-// - assets/sounds/*.mp3                 (upload sounds to assets/sounds/)
+// Uses localStorage for settings. Replace audio/image placeholders in /assets as needed.
 
 const startBtn = document.getElementById('startBtn');
 const leaderBtn = document.getElementById('leaderBtn');
@@ -17,8 +13,8 @@ const soundToggle = document.getElementById('soundToggle');
 
 let settings = {
   sound: localStorage.getItem('q_mbi_sound') !== 'off',
-  bestScore: parseInt(localStorage.getItem('q_mbi_best')||'0'),
-  lastReset: parseInt(localStorage.getItem('q_mbi_reset')||'0')
+  bestScore: parseInt(localStorage.getItem('q_mbi_best') || '0', 10),
+  lastReset: parseInt(localStorage.getItem('q_mbi_reset') || '0', 10)
 };
 
 // Score weekly reset
@@ -29,9 +25,8 @@ function weeklyResetCheck(){
     localStorage.setItem('q_mbi_reset', now);
     return;
   }
-  const sevenDays = 7*24*60*60*1000;
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
   if(now - settings.lastReset >= sevenDays){
-    // reset best score
     settings.bestScore = 0;
     localStorage.setItem('q_mbi_best', '0');
     settings.lastReset = now;
@@ -43,18 +38,29 @@ bestScoreEl.textContent = settings.bestScore;
 
 // Loader simulation
 function runLoader(){
-  overlay.classList.remove('hidden');
+  if(overlay) overlay.classList.remove('hidden');
   let p = 0;
   const t = setInterval(()=>{
-    p += Math.floor(Math.random()*12)+6;
-    if(p>100) p=100;
-    progressFill.style.width = p + '%';
-    progressText.textContent = p + '%';
-    // Baris 50 (di dalam fungsi runLoader)
-    if(p>=100){ clearInterval(t); setTimeout(()=>{ overlay.classList.add('hidden'); landing.classList.remove('hidden'); }, 600); }
-  },200);
+    p += Math.floor(Math.random() * 12) + 6;
+    if(p > 100) p = 100;
+    if(progressFill) progressFill.style.width = p + '%';
+    if(progressText) progressText.textContent = p + '%';
+    if(p >= 100){
+      clearInterval(t);
+      setTimeout(()=>{
+        if(overlay) overlay.classList.add('hidden');
+
+if(landing){
+  landing.classList.remove('hidden');
+  landing.classList.add('show');
 }
-document.addEventListener('DOMContentLoaded', runLoader);
+
+playSound('start');
+
+      }, 600);
+    }
+  }, 200);
+}
 
 // Sound system
 const sounds = {
@@ -63,41 +69,80 @@ const sounds = {
   correct: 'assets/sounds/correct.mp3',
   wrong: 'assets/sounds/wrong.mp3',
   gameover: 'assets/sounds/gameover.mp3',
-  help: 'assets/sounds/help.mp3',
+  help: 'assets/sounds/help.mp3'
 };
 let audios = {};
 for(let k in sounds){
-  audios[k] = new Audio(sounds[k]);
-  audios[k].preload = 'auto';
+  try{
+    audios[k] = new Audio(sounds[k]);
+    audios[k].preload = 'auto';
+  }catch(e){
+    audios[k] = null;
+  }
 }
 function playSound(name){
   if(!settings.sound) return;
-  if(audios[name]) { try{ audios[name].currentTime = 0; audios[name].play(); }catch(e){} }
+  const a = audios[name];
+  if(a){
+    try{ a.currentTime = 0; a.play(); }catch(e){ /* ignore */ }
+  } 
 }
-// Kode Diperbaiki (Menggunakan Karakter Simbol yang Lebih Kompatibel)
+function showHelper(img, text, callback) {
+  const popup = document.getElementById('helperPopup');
+  const imgEl = document.getElementById('helperImg');
+  const textEl = document.getElementById('helperText');
+  const closeBtn = document.getElementById('closeHelper');
 
-// Baris ~83: Sound Toggle
+  imgEl.src = img;
+  textEl.textContent = text;
+
+  popup.classList.remove("hidden");
+  popup.classList.add("show");
+
+  closeBtn.onclick = () => {
+    popup.classList.remove("show");
+    setTimeout(()=> popup.classList.add("hidden"), 300);
+    setTimeout(callback, 200);
+  };
+}
+
+
+
+
+// Sound Toggle: using compatible emojis
+const soundIcon = document.getElementById("soundIcon");
+
+function updateSoundIcon(){
+  soundIcon.src = settings.sound 
+    ? "assets/icons/sound_on.png" 
+    : "assets/icons/sound_off.png";
+}
+
+
 function toggleSound(){
-  settings.sound = !settings.sound;
-  localStorage.setItem('q_mbi_sound', settings.sound ? 'on':'off');
-  // Mengganti karakter bermasalah 
-  soundToggle.textContent = settings.sound ? '' : '';
-  playSound('click');
+  settings.sound = !settings.sound;
+  localStorage.setItem('q_mbi_sound', settings.sound ? 'on' : 'off');
+  updateSoundIcon();
+  playSound('click');
 }
-soundToggle.addEventListener('click', toggleSound);
-soundToggle.textContent = settings.sound ? '' : ''; // Menggunakan simbol yang sama saat inisialisasi
+
+if(soundToggle){
+  soundToggle.addEventListener('click', toggleSound);
+  updateSoundIcon();
+}
 
 
-// Baris 90 (Navigation handlers)
-startBtn.addEventListener('click', ()=>{ playSound('start'); openQuiz(); }); // Mengganti 'click' dengan 'start' untuk tombol mulai
-leaderBtn.addEventListener('click', ()=>{ playSound('click'); openLeaderboard(); });
-guideBtn.addEventListener('click', ()=>{ playSound('click'); openGuide(); });
+// Navigation handlers
+if(startBtn) startBtn.addEventListener('click', ()=>{ playSound('start'); openQuiz(); });
+if(leaderBtn) leaderBtn.addEventListener('click', ()=>{ playSound('click'); openLeaderboard(); });
+if(guideBtn) guideBtn.addEventListener('click', ()=>{ playSound('click'); openGuide(); });
 
-// Simple page render functions (creates in-document modal pages)
+// Simple page render functions
 function clearMain(){ document.querySelectorAll('.page').forEach(e=>e.remove()); }
+
 function openGuide(){
   clearMain();
-  const page = document.createElement('div'); page.className='page';
+  const page = document.createElement('div'); page.className = 'page';
   page.innerHTML = `
     <div class="modal">
       <h2>Petunjuk</h2>
@@ -111,8 +156,7 @@ function openGuide(){
 
 function openLeaderboard(){
   clearMain();
-  const page = document.createElement('div'); page.className='page';
-  // shows local top10 and explains online option
+  const page = document.createElement('div'); page.className = 'page';
   const top = getLocalLeaderboard();
   let rows = top.map((r,i)=>`<div class="lb-row">${i+1}. <b>${escapeHtml(r.name)}</b> - ${r.score}</div>`).join('');
   if(!rows) rows = '<div class="empty">Belum ada skor tercatat.</div>';
@@ -129,33 +173,57 @@ function openLeaderboard(){
 }
 
 function openQuiz(){
-  clearMain();
-  const page = document.createElement('div'); page.className='page';
-  page.innerHTML = `
-    <div class="quiz-area">
-      <div class="topbar"><button id="backToHome" class="round-btn"><</button> <div class="score">Score: <span id="curScore">0</span></div></div>
-      <div class="question-box" id="questionBox">Memuat pertanyaan...</div>
-      <div class="answers" id="answers"></div>
-      <div class="helpers">
-        <button id="helpWoman" class="helper-btn">Aisyah</button>
-        <button id="helpMan" class="helper-btn">Deny</button>
-      </div>
-      <div id="confirmModal" class="confirm hidden">
-        <div class="confirm-box">
-          <p>Apakah anda yakin?</p>
-          <div><button id="waitBtn" class="big-btn">Tunggu</button> <button id="sureBtn" class="big-btn">Yakin</button></div>
-        </div>
-      </div>
-    </div>
-  `;
-  landing.appendChild(page);
+  landing.classList.add('hidden'); // sembunyikan landing
 
-  document.getElementById('backToHome').addEventListener('click', ()=>{ playSound('click'); page.remove(); weeklyResetCheck(); });
-  // quiz logic
-  startQuiz();
+  const quizPage = document.getElementById('quizPage');
+quizPage.innerHTML = "";
+quizPage.classList.remove('hidden');
+quizPage.classList.add('show');
+
+const page = document.createElement('div');
+page.className = 'quiz-area page-transition';
+
+page.innerHTML = `
+ <div class="topbar">
+  <button id="backToHome" class="round-btn">
+  <img src="assets/icons/back.png" alt="back" id="backIcon">
+</button>
+   <div class="score">Score: <span id="curScore">0</span></div>
+ </div>
+ <div class="question-box" id="questionBox">Memuat pertanyaan...</div>
+ <div class="answers" id="answers"></div>
+<div class="helpers">
+  <button id="helpMan" class="helper-btn">
+    <img src="assets/icons/deny.png" alt="Deny">
+  </button>
+  <button id="helpWoman" class="helper-btn">
+    <img src="assets/icons/aisyah.png" alt="Aisyah">
+  </button>
+</div>
+`;
+
+quizPage.appendChild(page);
+
+setTimeout(() => {
+  page.classList.add('show');
+}, 50);
+
+document.getElementById('backToHome').addEventListener('click', ()=>{
+  playSound('click');
+  page.classList.remove('show');
+  page.classList.add('fade-out');
+
+  setTimeout(()=>{
+    quizPage.classList.add('hidden');
+    landing.classList.remove('hidden');
+  }, 350);
+});
+
+startQuiz();
+
 }
 
-// QUESTIONS (20 sample). You can edit or replace this array later.
+// QUESTIONS (20 sample)
 const QUESTIONS = [
   {"q":"Ibukota Indonesia?","a":["Jakarta","Bandung","Surabaya","Medan"],"c":0},
   {"q":"Planet terdekat ke matahari?","a":["Bumi","Venus","Merkurius","Mars"],"c":2},
@@ -164,7 +232,7 @@ const QUESTIONS = [
   {"q":"Siapa penemu telepon?","a":["Thomas Edison","Alexander Graham Bell","Nikola Tesla","Tim Berners-Lee"],"c":1},
   {"q":"Satu jam = ... menit?","a":["30","60","90","120"],"c":1},
   {"q":"Bendera Jepang berlambang?","a":["Bulan","Matahari","Bintang","Burung"],"c":1},
- {"q":"Suhu beku air (°C)?","a":["0","100","-10","10"],"c":0},
+  {"q":"Suhu beku air (Â°C)?","a":["0","100","-10","10"],"c":0},
   {"q":"Simbol emas dalam tabel periodik?","a":["Au","Ag","Fe","G"],"c":0},
   {"q":"Benua terbesar di dunia?","a":["Afrika","Antartika","Asia","Eropa"],"c":2},
   {"q":"Alat musik tiup?","a":["Gitar","Piano","Saxophone","Drum"],"c":2},
@@ -179,18 +247,13 @@ const QUESTIONS = [
   {"q":"Warna campuran merah + biru?","a":["Hijau","Ungu","Kuning","Oranye"],"c":1}
 ];
 
-// shuffle helper
+// helpers
 function shuffle(arr){ let a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
 
-let session = {
-  queue: [],
-  current: null,
-  score: 0,
-  usedHelp: false
-};
+let session = { queue: [], current: null, score: 0, usedHelp: false };
 
 function startQuiz(){
-  session.queue = shuffle(QUESTIONS).slice(0); // full shuffled deck
+  session.queue = shuffle(QUESTIONS).slice(0);
   session.score = 0;
   session.current = null;
   session.usedHelp = false;
@@ -202,7 +265,7 @@ function startQuiz(){
 function renderQuestion(){
   const qbox = document.getElementById('questionBox');
   const ansbox = document.getElementById('answers');
-  if(session.queue.length===0){ endGame(); return; }
+  if(session.queue.length === 0){ endGame(); return; }
   session.current = session.queue.shift();
   qbox.textContent = session.current.q;
   ansbox.innerHTML = '';
@@ -212,38 +275,36 @@ function renderQuestion(){
     btn.addEventListener('click', ()=>confirmAnswer(ch));
     ansbox.appendChild(btn);
   });
-  document.getElementById('curScore').textContent = session.score;
+  const curScoreEl = document.getElementById('curScore');
+  if(curScoreEl) curScoreEl.textContent = session.score;
 }
 
 let pendingChoice = null;
 function confirmAnswer(choice){
   pendingChoice = choice;
   const cm = document.getElementById('confirmModal');
-  cm.classList.remove('hidden');
+  if(cm) cm.classList.remove('hidden');
   playSound('click');
-  document.getElementById('waitBtn').onclick = ()=>{ cm.classList.add('hidden'); playSound('click'); }
-  document.getElementById('sureBtn').onclick = ()=>{ cm.classList.add('hidden'); checkAnswer(pendingChoice); pendingChoice = null; }
+  document.getElementById('waitBtn').onclick = ()=>{ if(cm) cm.classList.add('hidden'); playSound('click'); }
+  document.getElementById('sureBtn').onclick = ()=>{ if(cm) cm.classList.add('hidden'); checkAnswer(pendingChoice); pendingChoice = null; }
 }
 
 function checkAnswer(choice){
-  // find index of choice in original current.a to determine correctness
   const correctText = session.current.a[session.current.c];
   const isCorrect = choice === correctText;
   if(isCorrect){
     playSound('correct');
     session.score += 10;
     flashCorrect(choice);
-    setTimeout(()=>{ document.getElementById('curScore').textContent = session.score; renderQuestion(); },900);
+    setTimeout(()=>{ const curScoreEl = document.getElementById('curScore'); if(curScoreEl) curScoreEl.textContent = session.score; renderQuestion(); },900);
   } else {
     playSound('wrong');
-    alert('Anda salah'); // simple feedback
-    // reset to initial position: restart session with fresh random
+    alert('Anda salah');
     startQuiz();
   }
 }
 
 function flashCorrect(choiceText){
-  // visually highlight correct answer in answers area
   const buttons = document.querySelectorAll('.answer-btn');
   buttons.forEach(b=>{
     if(b.textContent === choiceText){
@@ -257,37 +318,88 @@ function flashCorrect(choiceText){
 function useHelpWoman(){
   if(session.usedHelp){ alert('Anda sudah menggunakan bantuan pada sesi ini'); return; }
   session.usedHelp = true;
-  // show ad placeholder and deduct points
-  showAd(()=>{ // after ad finishes
-    playSound('help');
-    // Display AISYAH (the real assets should be uploaded by you)
-    alert('AISYAH: (memberikan jawaban yang tepat) - jawaban: ' + session.current.a[session.current.c]);
-    session.score = Math.max(0, session.score - 3);
-    document.getElementById('curScore').textContent = session.score;
+
+  showAd(()=>{ 
+    playSound('help'); 
+    showHelper('assets/images/aisyah.png', 
+      "Menurut saya jawaban yang benar adalah: " + session.current.a[session.current.c],
+      () => {
+        session.score = Math.max(0, session.score - 3);
+        document.getElementById('curScore').textContent = session.score;
+      }
+    );
   });
 }
+
 
 function useHelpMan(){
   if(session.usedHelp){ alert('Anda sudah menggunakan bantuan pada sesi ini'); return; }
   session.usedHelp = true;
-  showAd(()=>{ playSound('help'); alert('DENY: Aku akan menghilangkan 2 jawaban yang salah. Sekarang ku serahkan sisanya padamu.'); session.score = Math.max(0, session.score - 2); document.getElementById('curScore').textContent = session.score; removeTwoWrongOptions(); });
+
+  showAd(()=>{
+    playSound('help');
+    showHelper('assets/images/deny.png',
+      "Saya akan membantu anda untuk menghapus 2 jawaban yang salah, sekarang keputusan ada di tangan anda!",
+      () => {
+        session.score = Math.max(0, session.score - 2);
+        document.getElementById('curScore').textContent = session.score;
+        removeTwoWrongOptions();
+      }
+    );
+  });
 }
 
+
 function removeTwoWrongOptions(){
-  const correctText = session.current.a[session.current.c];
+  const correctText = session.current && session.current.a ? session.current.a[session.current.c] : null;
+  if(!correctText) return;
+
   const buttons = Array.from(document.querySelectorAll('.answer-btn'));
-  let wrongButtons = buttons.filter(b=>b.textContent !== correctText);
-  wrongButtons = shuffle(wrongButtons).slice(0,2);
-  wrongButtons.forEach(b=>{ b.disabled = true; b.style.opacity = 0.45; });
+  // Filter jawaban yang salah
+  let wrongButtons = buttons.filter(b => b.textContent !== correctText);
+
+  // Jika kurang dari 2 salah (edge-case), pakai semua yang ada
+  if(wrongButtons.length === 0) return;
+  wrongButtons = shuffle(wrongButtons).slice(0, 2);
+
+  wrongButtons.forEach((btn, i) => {
+    // beri jeda antar animasi agar terasa berurutan
+    setTimeout(() => {
+      playSound('help'); // efek suara tiap tombol hilang
+
+      // animasi menghilang
+      btn.style.transition = "transform 0.28s ease, opacity 0.28s ease";
+      btn.style.transform = "scale(0.6)";
+      btn.style.opacity = "0";
+
+      // disable interaksi segera agar user tidak klik selama animasi
+      btn.style.pointerEvents = "none";
+
+      // hapus elemen setelah animasi selesai
+      setTimeout(() => {
+        if(btn && btn.parentNode) btn.parentNode.removeChild(btn);
+      }, 320);
+    }, i * 260);
+  });
 }
+
+
 
 // ad simulation
 function showAd(callback){
-  // simulate ad by a modal 3-second timer. In production, integrate Ad SDK here.
   const ad = document.createElement('div'); ad.className='ad-modal';
   ad.innerHTML = '<div class="ad-box"><p>Iklan sedang ditampilkan...</p><div id="adTimer">3</div></div>';
   document.body.appendChild(ad);
-  let t=3; const iv = setInterval(()=>{ t--; document.getElementById('adTimer').textContent = t; if(t<=0){ clearInterval(iv); ad.remove(); callback(); } },1000);
+  let t = 3; const iv = setInterval(()=>{
+    t--;
+    const el = document.getElementById('adTimer');
+    if(el) el.textContent = t;
+    if(t <= 0){
+      clearInterval(iv);
+      ad.remove();
+      callback();
+    }
+  },1000);
 }
 
 // end game
@@ -299,9 +411,8 @@ function endGame(){
     saveLocalLeaderboard(name.substring(0,20), session.score);
     settings.bestScore = session.score;
     localStorage.setItem('q_mbi_best', settings.bestScore);
-    bestScoreEl.textContent = settings.bestScore;
+    if(bestScoreEl) bestScoreEl.textContent = settings.bestScore;
   }
-  // return to landing
   document.querySelectorAll('.page').forEach(e=>e.remove());
 }
 
@@ -320,6 +431,16 @@ function saveLocalLeaderboard(name, score){
 }
 
 // small util
-function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeHtml(s){ return (s + '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// Allow developer to programmatically update QUESTIONS by editing js/game.js or loading an external questions.json
+// Safety fallback if loader fails
+setTimeout(()=>{
+  if(overlay) overlay.classList.add("hidden");
+  if(landing) {
+    landing.classList.remove("hidden");
+    landing.classList.add("show");
+  }
+}, 4000);
+
+
+document.addEventListener("DOMContentLoaded", runLoader);
