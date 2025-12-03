@@ -1,29 +1,665 @@
-/* Basic styling for QUIZ PINTAR VERSI MBI */
-:root{--accent:#00d1ff;--bg:#0b1020;--glass:rgba(255,255,255,0.06);--card:#0f1724}
-*{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
-html,body{height:100%;margin:0;background:var(--bg);color:#e6eef8}
-.hidden{display:none}
-.overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.9));z-index:9999}
-.loader-box{width:260px;padding:20px;border-radius:12px;background:rgba(255,255,255,0.03);text-align:center;backdrop-filter: blur(6px)}
-.loader-logo{width:90px;height:90px;animation:spin 2s linear infinite;border-radius:50%;object-fit:cover;margin:0 auto 12px;display:block}
-@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-.progress-bar{width:100%;height:10px;background:rgba(255,255,255,0.08);border-radius:8px;overflow:hidden;margin-top:6px}
-.progress-bar > div{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#7b61ff)}
-#progressText{margin-top:8px;font-weight:600}
+/* ========== ROOT & GLOBAL ========== */
+:root {
+  --accent:#00d1ff;
+  --bg:#0b1020;
+  --glass:rgba(255,255,255,0.06);
+  --card:#0f1724;
+}
 
-/* Landing */
-.landing{position:relative;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:28px}
-.bg{position:fixed;inset:0;background-size:cover;background-position:center;filter:blur(4px) contrast(0.9) brightness(0.5);z-index:-1}
-.top-area{max-width:720px;width:100%;text-align:center;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
-.top-logo{width:96px;height:96px;border-radius:50%;object-fit:cover;margin:6px auto;display:block;border:4px solid rgba(255,255,255,0.04)}
-.holo{font-size:28px;margin:8px 0 6px;text-transform:uppercase;letter-spacing:1px;position:relative}
-.holo::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#fff,#0ff,#f0f);mix-blend-mode:screen;filter:blur(6px);opacity:0.45;transform:skewX(-10deg)}
-.subtitle{opacity:0.85;margin-bottom:12px}
-.controls{position:absolute;right:36px;top:28px}
-.round-btn{width:48px;height:48px;border-radius:50%;border:0;background:var(--glass);color:#fff;font-size:18px;cursor:pointer}
-.big-btn{display:inline-block;padding:12px 22px;margin:8px;border-radius:40px;border:0;background:linear-gradient(90deg,var(--accent),#7b61ff);color:#021226;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 6px 20px rgba(99,102,241,0.12)}
-.ad-banner{margin-top:18px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px}
-.score-area{margin-top:12px;font-weight:600}
+* {
+  box-sizing:border-box;
+  font-family:Inter,system-ui,-apple-system,Roboto,Arial;
+}
 
-/* Responsive */
-@media (max-width:600px){.top-area{padding:18px}.holo{font-size:20px}.top-logo{width:80px;height:80px}}
+html,body {
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  color:#e6eef8;
+  overflow-x:hidden;
+}
+
+/* Hidden state */
+.hidden {
+  display:none !important;
+  opacity:0;
+}
+
+/* ========== LOADER ========== */
+.overlay {
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.9));
+  z-index:9999;
+}
+
+.loader-box {
+  width:260px;
+  padding:20px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.05);
+  text-align:center;
+  backdrop-filter:blur(6px);
+}
+
+.loader-logo {
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  object-fit:cover;
+  margin:0 auto 12px;
+  animation:spin 2s linear infinite;
+}
+
+@keyframes spin {from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+.progress-bar {
+  width:100%;
+  height:10px;
+  background:rgba(255,255,255,0.08);
+  border-radius:8px;
+  overflow:hidden;
+  margin-top:6px;
+}
+
+.progress-bar > div {
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--accent),#7b61ff);
+}
+
+#progressText {
+  margin-top:8px;
+  font-weight:600;
+}
+
+/* ========== LANDING PAGE ========== */
+.landing {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* ⬅ pusat vertikal */
+  align-items: center;     /* ⬅ pusat horizontal */
+  text-align: center;
+  padding: 32px;
+  animation: fadeIn 0.9s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(30px);}
+  to {opacity:1; transform:translateY(0);}
+}
+
+.bg {
+  position:fixed;
+  inset:0;
+  background-size:cover;
+  background-position:center;
+  animation:slowZoom 18s alternate infinite ease-in-out;
+  z-index:-1;
+}
+
+@keyframes slowZoom {
+  from {transform:scale(1);}
+  to {transform:scale(1.06);}
+}
+
+.top-area {
+  max-width:720px;
+  margin:auto;
+  padding:30px;
+
+  /* Hilangkan kotak */
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.main-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+
+.top-logo {
+  width:220px!important;
+  height:220px!important;
+  border-radius:50%;
+  object-fit:cover;
+  display:block;
+  margin:auto;
+  border:4px solid rgba(255,255,255,0.15);
+  animation:popIn .8s ease forwards;
+  opacity:0;
+}
+
+@keyframes popIn {from{transform:scale(0.4); opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* Text */
+.holo {
+  font-size:28px;
+  margin:10px 0;
+  animation:glowPulse 2.5s infinite ease-in-out;
+  text-shadow:0 0 12px cyan;
+}
+
+@keyframes glowPulse {
+  0%{opacity:.7; text-shadow:0 0 10px cyan;}
+  50%{opacity:1; text-shadow:0 0 22px magenta;}
+  100%{opacity:.6; text-shadow:0 0 10px cyan;}
+}
+
+.subtitle {opacity:0.8; margin-bottom:10px;}
+
+.controls {
+  position:absolute;
+  right:18px;
+  top:18px;
+}
+
+/* Buttons */
+.round-btn {
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:0;
+  cursor:pointer;
+  background:var(--glass);
+  color:white;
+  font-size:18px;
+  transition:0.22s;
+}
+.round-btn:hover {
+  transform:scale(1.1) rotate(8deg);
+}
+
+.big-btn {
+  width: 65%;                /* 🔥 tombol jadi lebih stabil ukurannya */
+  max-width: 300px;          /* batas maksimal agar tidak terlalu besar */
+  padding:12px 22px;
+  margin:12px auto;          /* auto bikin posisi selalu di tengah */
+  border-radius:40px;
+  border:0;
+  cursor:pointer;
+  background:linear-gradient(90deg,var(--accent),#7b61ff);
+  font-size:18px;
+  color:#022;
+  font-weight:bold;
+  transition:.22s;
+  box-shadow:0 6px 20px rgba(99,102,241,0.15);
+  text-align: center;        /* biar tulisan tetap rapi */
+}
+
+
+.big-btn:active {transform:scale(.92);}
+
+/* Score Badge */
+.score-area {
+  position:fixed;
+  top:18px;
+  left:18px;
+  padding:10px 16px;
+  background:rgba(0,0,0,0.35);
+  border-radius:12px;
+  font-size:16px;
+  display:flex;
+  gap:6px;
+  backdrop-filter:blur(5px);
+  box-shadow:0 0 12px cyan;
+}
+.score-area::before {content:'🏆';}
+
+/* Footer */
+.footer {
+  position:fixed;
+  bottom:8px;
+  width:100%;
+  text-align:center;
+  font-size:14px;
+  opacity:.85;
+  color:#00eaff;
+}
+
+
+/* ========== QUIZ PAGE ========== */
+#quizPage {
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  background:url('assets/images/bg.jpg') center/cover no-repeat;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:24px;
+  overflow:auto;
+  opacity:0;
+}
+
+/* Page animation */
+.page-transition {transition:.45s; opacity:0; transform:translateY(30px);}
+.page-transition.show {opacity:1; transform:translateY(0);}
+.fade-out {opacity:0; transform:scale(.92);}
+
+/* Question */
+.question-box {animation:popQ .45s;}
+@keyframes popQ {from{opacity:0; transform:scale(.85);}to{opacity:1; transform:scale(1);}}
+
+/* Answers */
+.answer-btn {
+  transition: .45s ease;
+}
+
+@keyframes fadeA {from{opacity:0; transform:translateY(10px);}to{opacity:1;}}
+
+#helperPopup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease;
+}
+
+/* Muncul */
+#helperPopup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.helper-box {
+  width: 320px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  animation: popInHelper .4s ease forwards;
+}
+
+.helper-box img {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+@keyframes popInHelper {
+  from {transform: scale(0.3); opacity: 0;}
+  to {transform: scale(1); opacity: 1;}
+}
+
+/* === PAGE STATE FIX === */
+.landing.show {
+  opacity: 1 !important;
+}
+
+#quizPage.show {
+  opacity: 1 !important;
+}
+
+/* === HELPER POPUP FIX === */
+#helperPopup img {
+  animation: fadeIn .45s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px) scale(.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* === FIX BACKGROUND TOO DARK/BLUR === */
+.bg {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+#soundToggle img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* === CUSTOM BACK BUTTON IMAGE === */
+#backToHome img {
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+#backToHome {
+  font-size: 0; /* sembunyikan teks "<" */
+}
+
+#backToHome:hover img {
+  transform: scale(1.15);
+  transition: .2s ease;
+}
+
+#backToHome:active img {
+  transform: scale(0.85);
+}
+
+/* === HELPER BUTTON ICON STYLE === */
+.helper-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: .25s;
+  box-shadow: 0 4px 10px rgba(0,255,255,0.1);
+}
+
+.helper-btn img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.helper-btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 14px cyan;
+}
+
+.helper-btn:active {
+  transform: scale(0.9);
+}
+
+/* === ATUR POSISI TOMBOL BANTUAN BERDAMPINGAN === */
+.helpers {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 320px;
+  margin: 20px auto;
+  padding: 0 10px;
+}
+
+.helper-btn {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 8px rgba(0,255,255,0.25);
+  transition: .25s ease;
+}
+
+.helper-btn img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.helper-btn:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 18px cyan;
+}
+
+.helper-btn:active {
+  transform: scale(0.9);
+}
+
+/* ==== POSISIKAN PERTANYAAN DI TENGAH ==== */
+#quizPage {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Tengah secara vertikal */
+  align-items: center; /* Tengah secara horizontal */
+  text-align: center;
+  gap: 20px;
+}
+
+.question-box {
+  max-width: 90%;
+font-size: clamp(18px, 4vw, 28px);
+  font-weight: bold;
+}
+
+#questionBox {
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 22px;
+  margin: 18px auto;
+  max-width: 85%;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.4;
+  box-shadow: 0 0 18px rgba(0,255,255,0.18);
+  backdrop-filter: blur(6px);
+  transition: .25s ease;
+}
+
+/* Hover animation (opsional) */
+#questionBox:hover {
+  transform: scale(1.03);
+}
+
+.quiz-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 90px;
+  gap: 25px;
+  width: 100%;
+}
+/* ===== QUESTION BOX ===== */
+#questionBox {
+  background: rgba(255,255,255,0.08);
+  border: 2px solid #00eaff;
+  box-shadow: 0 0 18px #00eaff88;
+  padding: 22px;
+  border-radius: 14px;
+  text-align: center;
+  font-size: 22px;
+  max-width: 780px;
+  width: 100%;
+  margin: auto;
+}
+
+/* Hover glow (opsional) */
+#questionBox:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.45),
+              0 0 65px rgba(123, 97, 255, 0.35);
+}
+
+.question-box {
+  animation: fadeIn .45s ease forwards;
+}
+
+/* ===== FIX POSITION BACK BUTTON ===== */
+.topbar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start; /* Tombol tetap di kiri */
+  align-items: center;
+  padding: 10px 20px;
+  position: absolute;
+  top: 10px; /* pindahkan ke atas */
+  left: 0;
+  z-index: 999;
+}
+
+/* Supaya tombol tidak terlalu mepet */
+#backToHome {
+  margin-right: 20px;
+}
+
+/* ===== FIX BACK BUTTON POSITION LEFT TOP ===== */
+
+.topbar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999;
+}
+
+/* Biar tombol nggak ikut style tombol jawaban */
+#backToHome {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+
+#backToHome img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  pointer-events: none;
+  transition: 0.2s ease;
+}
+
+/* Efek animasi saat hover */
+#backToHome:hover img {
+  transform: scale(1.12);
+}
+
+#backToHome:active img {
+  transform: scale(0.85);
+}
+/* ===== GRID ANSWER LAYOUT (2 KOLOM) ===== */
+.answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 22px;
+  width: 100%;
+  max-width: 750px;
+}
+
+/* Tombol jawaban full block di masing-masing kolom */
+.answer-btn {
+  width: 100%;
+  text-align: center;
+}
+
+/* ===== FIX POSISI TOMBOL BACK ===== */
+/* ===== FULL ICON BACK BUTTON ===== */
+#backToHome {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06); /* opsional */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: .25s ease;
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  z-index: 999;
+}
+
+/* Supaya gambar memenuhi tombol */
+#backToHome img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* kalau mau fullscreen tanpa ruang ubah ke "cover" */
+  pointer-events: none;
+}
+
+/* Hover efek neon */
+#backToHome:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 15px cyan;
+}
+
+/* Klik animasi */
+#backToHome:active {
+  transform: scale(.9);
+  box-shadow: 0 0 20px yellow;
+}
+
+/* ===== FIX POSISI SCORE ===== */
+.score {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0,0,0,0.45);
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 2px solid #ffea00;
+  box-shadow: 0 0 14px #ffea00aa;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ===== FULL ICON SOUND BUTTON ===== */
+#soundToggle {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  transition: .25s ease;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  z-index: 999;
+}
+
+/* Gambar memenuhi tombol */
+#soundToggle img#soundIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* bisa diganti cover */
+  pointer-events: none;
+}
+
+/* Hover efek neon */
+#soundToggle:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 15px cyan;
+}
+
+/* Klik efek */
+#soundToggle:active {
+  transform: scale(.9);
+  box-shadow: 0 0 20px yellow;
+}
