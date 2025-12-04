@@ -5,14 +5,75 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Petunjuk - Quiz Pintar MBI</title>
 <link rel="stylesheet" href="style.css">
+
+<style>
+/* PRIORITAS CSS DISINI */
+
+/* Layout konten */
+.content-area {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  padding: 10px;
+}
+
+/* Ukuran karakter Aisyah */
+.aisyah {
+  width: 120px !important; /* pakai !important agar style lama kalah */
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px #00eaff);
+}
+
+/* Teks */
+.text-box {
+  flex: 1;
+  max-width: 65%;
+  color: white;
+  background: rgba(0,0,0,0.45);
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px #00eaff;
+}
+
+/* Posisi tombol sound */
+.voice-btn {
+  margin-bottom: 15px;
+}
+
+/* Tombol kembali */
+.back-btn {
+  display: block;
+  margin: 40px auto 0;
+}
+
+/* Responsif HP */
+@media (max-width: 768px) {
+  .content-area {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .aisyah {
+    width: 100px !important;
+  }
+
+  .text-box {
+    max-width: 100%;
+  }
+}
+</style>
 </head>
+
+
 
 <body>
 
 <div class="guide-wrapper">
 
   <!-- Tombol suara -->
-  <button id="playVoice" class="neon-btn voice-btn">🔊 Dengarkan</button>
+<button id="playVoice" class="neon-btn voice-btn">🔊 Dengarkan</button>
 
   <!-- Area konten -->
   <div class="content-area">
