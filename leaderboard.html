@@ -1,13 +1,130 @@
 <!doctype html>
 <html lang="id">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Leaderboard - QUIZ PINTAR VERSI MBI</title>
-<link rel="stylesheet" href="../style.css">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Leaderboard - QUIZ PINTAR MBI</title>
+  <link rel="stylesheet" href="style.css">
+
+<style>
+
+/* ===== GLOBAL ===== */
+body {
+  margin: 0;
+  padding: 0;
+  background: #05070f;
+  font-family: 'Trebuchet MS', sans-serif;
+  color: white;
+  text-align: center;
+}
+
+/* ===== TITLE GLOWING ===== */
+h2 {
+  margin-top: 30px;
+  font-size: 28px;
+  text-shadow: 0 0 10px cyan, 0 0 25px cyan;
+}
+
+/* ===== BOX ===== */
+#leaderboardBox {
+  width: 90%;
+  max-width: 400px;
+  margin: 25px auto;
+  background: rgba(0,255,255,0.05);
+  backdrop-filter: blur(8px);
+  border: 2px solid cyan;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 0 15px cyan, inset 0 0 10px cyan;
+}
+
+/* ===== LIST ===== */
+ul {
+  list-style: none;
+  padding: 0;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+li {
+  font-size: 18px;
+  padding: 10px;
+  margin: 5px 0;
+  background: rgba(0,255,255,0.07);
+  border-radius: 8px;
+  border-left: 4px solid cyan;
+  transition: 0.2s;
+  text-shadow: 0 0 8px cyan;
+}
+
+li:hover {
+  transform: scale(1.05);
+  background: rgba(0,255,255,0.15);
+  box-shadow: 0 0 12px cyan;
+}
+
+/* ===== NEON BUTTON ===== */
+.neon-btn {
+  margin-top: 20px;
+  padding: 14px 35px;
+  font-size: 18px;
+  background: #00ffff;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.25s;
+  box-shadow: 0 0 15px cyan, 0 0 30px cyan;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+.neon-btn:hover {
+  transform: scale(1.09);
+  box-shadow: 0 0 25px cyan, 0 0 45px cyan;
+}
+
+/* ===== ANIMASI ===== */
+@keyframes pulse {
+  0% { box-shadow: 0 0 15px cyan; }
+  50% { box-shadow: 0 0 40px cyan; }
+  100% { box-shadow: 0 0 15px cyan; }
+}
+
+</style>
+
 </head>
+
 <body>
-<div class="leader-wrap">
-  <h1>Leaderboard</h1>
-  <p>Leaderboard global/online dapat diaktifkan dengan menambahkan konfigurasi Firebase di file <code>firebase-config.js</code>. Untuk saat ini leaderboard menampilkan data lokal dari browser.</p>
-  <a href="../index.html" class="big-btn">Kembali</a>
-</div>
+
+  <h2>🏆 Top 10 Leaderboard</h2>
+
+  <div id="leaderboardBox">
+      <ul id="leaderboardList"></ul>
+  </div>
+
+  <button id="backBtn" class="neon-btn">Kembali</button>
+
+<script>
+  const leaderboardList = document.getElementById('leaderboardList');
+  const backBtn = document.getElementById("backBtn");
+
+  backBtn.addEventListener("click", ()=> {
+    location.href = "index.html";
+  });
+
+  let scores = JSON.parse(localStorage.getItem("quiz_scores")) || [];
+
+  // Urutkan tertinggi ke rendah, lalu ambil 10 teratas
+  scores = scores.sort((a,b)=> b.score - a.score).slice(0,10);
+
+  if(scores.length){
+    leaderboardList.innerHTML =
+      scores.map((s,i)=> `<li>${i+1}. ${s.name} — ${s.score} pts</li>`).join("");
+  } else {
+    leaderboardList.innerHTML = "<p style='text-align:center'>Belum ada skor</p>";
+  }
+</script>
+
 </body>
 </html>
