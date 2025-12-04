@@ -1,7 +1,17 @@
 // QUIZ PINTAR VERSI MBI - main JS
 // Uses localStorage for settings. Replace audio/image placeholders in /assets as needed.
 
-const startBtn = document.getElementById('startBtn');
+// ===== BACKSOUND =====
+const bgMusic = new Audio("assets/sounds/bgm.mp3");
+bgMusic.loop = true;
+bgMusic.volume = 0.5; // optional
+
+startBtn.addEventListener('click', ()=>{
+  playSound('start');
+  bgMusic.play(); // <-- Tambahkan ini tepat di sini
+  openQuiz();
+});
+
 const leaderBtn = document.getElementById('leaderBtn');
 const guideBtn = document.getElementById('guideBtn');
 const overlay = document.getElementById('overlay');
@@ -123,13 +133,16 @@ function toggleSound(){
   settings.sound = !settings.sound;
   localStorage.setItem('q_mbi_sound', settings.sound ? 'on' : 'off');
   updateSoundIcon();
+
+  if(settings.sound){
+    bgMusic.play();
+  } else {
+    bgMusic.pause();
+  }
+
   playSound('click');
 }
 
-if(soundToggle){
-  soundToggle.addEventListener('click', toggleSound);
-  updateSoundIcon();
-}
 
 
 // Navigation handlers
@@ -444,3 +457,18 @@ setTimeout(()=>{
 
 
 document.addEventListener("DOMContentLoaded", runLoader);
+
+function saveLocalLeaderboard(name, score){
+  let leaderboard = JSON.parse(localStorage.getItem('quiz_scores')) || [];
+  
+  leaderboard.push({ name, score });
+
+  // Urutkan dari skor tertinggi
+  leaderboard.sort((a,b)=> b.score - a.score);
+
+  // Simpan
+  localStorage.setItem('quiz_scores', JSON.stringify(leaderboard));
+}
+document.getElementById("backBtn").addEventListener("click", ()=>{
+  location.href = "index.html";
+});
