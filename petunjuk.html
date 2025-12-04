@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Petunjuk - Quiz Pintar MBI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="guide-wrapper">
+
+  <!-- Tombol suara -->
+  <button id="playVoice" class="neon-btn voice-btn">🔊 Dengarkan</button>
+
+  <!-- Area konten -->
+  <div class="content-area">
+
+    <!-- Aisyah -->
+    <img src="assets/images/aisyah.png" class="aisyah" alt="Aisyah">
+
+    <!-- Teks petunjuk -->
+    <div class="text-box">
+      <h2 class="title">📌 Cara Bermain</h2>
+      <p>
+        Selamat datang di <b>Quiz Pintar MBI!</b><br><br>
+        Kamu akan menjawab pertanyaan pilihan ganda.<br>
+        Pilih jawaban yang benar untuk mendapatkan skor tertinggi.<br>
+        Semakin cepat kamu menjawab, semakin besar peluang menang!<br><br>
+        Semoga berhasil dan tetap semangat!
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Tombol kembali -->
+  <button onclick="location.href='index.html'" class="neon-btn back-btn">⬅ Kembali</button>
+
+</div>
+
+
+<script>
+let isSpeaking = false;
+const synth = window.speechSynthesis;
+
+const speak = new SpeechSynthesisUtterance(
+  "Halo! Saya Aisyah. Di sini kamu akan menjawab pertanyaan pilihan ganda. " +
+  "Pilih jawaban yang benar untuk mendapatkan skor tertinggi. Semoga sukses dan tetap semangat!"
+);
+
+speak.lang = "id-ID";
+speak.rate = 1.05;
+speak.pitch = 1.1;
+speak.volume = 1.0;
+
+document.getElementById("playVoice").addEventListener("click", ()=>{
+
+  if(isSpeaking){
+     synth.cancel();
+     isSpeaking = false;
+     document.getElementById("playVoice").innerText = "🔊 Dengarkan";
+     return;
+  }
+
+  synth.speak(speak);
+  isSpeaking = true;
+  document.getElementById("playVoice").innerText = "⏹ Stop";
+});
+
+speak.onend = ()=>{
+  isSpeaking = false;
+  document.getElementById("playVoice").innerText = "🔊 Dengarkan";
+}
+</script>
+
+</body>
+
+</html>
