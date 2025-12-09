@@ -532,35 +532,39 @@ function showAd(callback){
 }
 
 function endGame(){
-  playSound('gameover');
+function endGame(){
+  playSound('gameover');
 
-  const finalScore = session.score;
-  alert('Permainan selesai! Skor Anda: ' + finalScore);
+  const finalScore = session.score;
+  alert('Permainan selesai! Skor Anda: ' + finalScore);
 
-  // update best score
-  if(finalScore > settings.bestScore){
-    settings.bestScore = finalScore;
-    localStorage.setItem('q_mbi_best', String(settings.bestScore));
-    const bestScoreEl = document.getElementById('bestScore');
-    if(bestScoreEl) bestScoreEl.textContent = settings.bestScore;
-  }
+  // update best score
+  if(finalScore > settings.bestScore){
+    settings.bestScore = finalScore;
+    localStorage.setItem('q_mbi_best', String(settings.bestScore));
+    const bestScoreEl = document.getElementById('bestScore');
+    if(bestScoreEl) bestScoreEl.textContent = settings.bestScore;
+  }
 
- // simpan ke leaderboard lokal
-const playerName = promptForName(finalScore);
-saveToLeaderboard(playerName, finalScore);
+  // simpan ke leaderboard lokal
+  const playerName = promptForName(finalScore);
+  saveToLeaderboard(playerName, finalScore);
 
-// === SIMPAN JUGA KE LEADERBOARD GLOBAL (ONLINE) ===
-submitScore(playerName, finalScore);
- Kembali ke menu
-  const quizPage = document.getElementById('quizPage');
-  const landing = document.getElementById('landing');
-  if(quizPage) quizPage.classList.add('hidden');
-  if(landing) landing.classList.remove('hidden');
+  // === SIMPAN JUGA KE LEADERBOARD GLOBAL (ONLINE) ===
+  submitScore(playerName, finalScore);
 
-  // === TAMBAHAN: RESET SESI SAAT GAME OVER ===
-  session.score = 0; 
-  session.usedHelp = false;
-  // ==========================================
+  // Kembali ke menu (komentar: hanya catatan)
+  // Kembali ke menu
+
+  // Kembalikan tampilan ke menu / landing
+  const quizPage = document.getElementById('quizPage');
+  const landing = document.getElementById('landing');
+  if(quizPage) quizPage.classList.add('hidden');
+  if(landing) landing.classList.remove('hidden');
+
+  // === TAMBAHAN: RESET SESI SAAT GAME OVER ===
+  session.score = 0;
+  session.usedHelp = false;
 }
 
 // helper for prompting name safely
@@ -611,4 +615,5 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 
 // Akhir dari file js/game.js
+
 
