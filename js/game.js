@@ -1,4 +1,22 @@
 // QUIZ PINTAR VERSI MBI - main JS (FINAL VERSION)
+// === GLOBAL ONLINE LEADERBOARD (SheetDB) ===
+function submitScore(name, score) {
+    fetch("https://sheetdb.io/api/v1/mqohml41m1yzb", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            data: [
+                { name: name, score: score }
+            ]
+        })
+    })
+    .then(res => res.json())
+    .then(data => console.log("Score saved:", data))
+    .catch(err => console.error("Error saving score:", err));
+}
+// =============================================
 
 // ===== BACKSOUND & SETTINGS =====
 const bgMusic = new Audio("assets/sounds/bgm.mp3");
@@ -503,10 +521,13 @@ function endGame(){
     if(bestScoreEl) bestScoreEl.textContent = settings.bestScore;
   }
 
-  // simpan ke leaderboard lokal (Ini sudah benar)
-  saveToLeaderboard(promptForName(finalScore), finalScore);
+ // simpan ke leaderboard lokal
+const playerName = promptForName(finalScore);
+saveToLeaderboard(playerName, finalScore);
 
-  // Kembali ke menu
+// === SIMPAN JUGA KE LEADERBOARD GLOBAL (ONLINE) ===
+submitScore(playerName, finalScore);
+ Kembali ke menu
   const quizPage = document.getElementById('quizPage');
   const landing = document.getElementById('landing');
   if(quizPage) quizPage.classList.add('hidden');
@@ -564,4 +585,5 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initNavigation();
   runLoader();
 });
+
 // Akhir dari file js/game.js
