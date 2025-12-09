@@ -1,5 +1,7 @@
 // QUIZ PINTAR VERSI MBI - main JS (FINAL VERSION)
 // === GLOBAL ONLINE LEADERBOARD (SheetDB) ===
+console.log('game.js loaded');
+
 function submitScore(name, score) {
     fetch("https://sheetdb.io/api/v1/mqohml41m1yzb", {
         method: "POST",
@@ -615,5 +617,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 
 // Akhir dari file js/game.js
+
 
 
