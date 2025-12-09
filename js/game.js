@@ -198,27 +198,51 @@ function openGuide(){
   const back = document.getElementById('backFromGuide');
   if(back) back.addEventListener('click', ()=>{ playSound('click'); page.remove(); });
 }
+function openLeaderboard() {
+    clearMain();
+    const landing = document.getElementById('landing');
+    const page = document.createElement('div');
+    page.className = 'page';
 
-// PERBAIKAN SINTAKS KRITIS DI FUNGSI openLeaderboard
-function openLeaderboard(){
-  clearMain();
-  const landing = document.getElementById('landing');
-  const page = document.createElement('div'); page.className = 'page';
-  const top = getLocalLeaderboard();
-  let rows = top.map((r,i)=>`<div class="lb-row">${i+1}. <b>${escapeHtml(r.name)}</b> - ${r.score}</div>`).join('');
-  if(!rows) rows = '<div class="empty">Belum ada skor tercatat.</div>';
-  page.innerHTML = `
-    <div class="modal">
-      <h2>Leaderboard (Top 10)</h2>
-      <div class="lb-list">${rows}</div>
-      <p class="muted">Catatan: Untuk leaderboard global online, silakan konfigurasi Firebase (lihat README). Saat ini menampilkan papan skor lokal.</p>
-      <div style="margin-top:12px"><button id="backFromLB" class="big-btn">Kembali</button></div>
-    </div>
-  `;
-  if(landing) landing.appendChild(page);
-  const backBtn = document.getElementById('backFromLB');
-  if(backBtn) backBtn.addEventListener('click', ()=>{ playSound('click'); page.remove(); });
+    page.innerHTML = `
+        <div class="modal">
+            <h2>Leaderboard Global</h2>
+            <div id="lbLoading">Memuat data...</div>
+            <div class="lb-list" id="lbList"></div>
+            <button id="backFromLB" class="big-btn" style="margin-top:12px">Kembali</button>
+        </div>
+    `;
+
+    if (landing) landing.appendChild(page);
+
+    const backBtn = document.getElementById('backFromLB');
+    if (backBtn) backBtn.addEventListener('click', () => {
+        playSound('click');
+        page.remove();
+    });
+
+    // === AMBIL DATA GLOBAL DARI SHEETDB ===
+    loadLeaderboard().then(data => {
+        const lb = document.getElementById('lbList');
+        const loading = document.getElementById('lbLoading');
+
+        if (loading) loading.remove();
+
+        if (!lb) return;
+
+        if (!data || data.length === 0) {
+            lb.innerHTML = '<div class="empty">Belum ada data leaderboard global.</div>';
+            return;
+        }
+
+        lb.innerHTML = data
+            .map((r, i) => `
+                <div class="lb-row">${i + 1}. <b>${escapeHtml(r.name)}</b> - ${r.score}</div>
+            `)
+            .join('');
+    });
 }
+
 
 function openQuiz(){
   const landing = document.getElementById('landing');
@@ -587,3 +611,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 
 // Akhir dari file js/game.js
+
