@@ -105,7 +105,8 @@ li:hover {
 
   <button id="backBtn" class="neon-btn">Kembali</button>
 
-<script>
+
+  <script>
   const leaderboardList = document.getElementById('leaderboardList');
   const backBtn = document.getElementById("backBtn");
 
@@ -113,18 +114,34 @@ li:hover {
     location.href = "index.html";
   });
 
-  let scores = JSON.parse(localStorage.getItem("quiz_scores")) || [];
+  // ===== AMBIL DATA DARI SHEETDB (GLOBAL LEADERBOARD) =====
+  fetch("https://sheetdb.io/api/v1/mqohml41m1yzb")
+    .then(res => res.json())
+    .then(data => {
 
-  // Urutkan tertinggi ke rendah, lalu ambil 10 teratas
-  scores = scores.sort((a,b)=> b.score - a.score).slice(0,10);
+      if (!Array.isArray(data) || data.length === 0) {
+        leaderboardList.innerHTML = "<p style='text-align:center'>Belum ada skor</p>";
+        return;
+      }
 
-  if(scores.length){
-    leaderboardList.innerHTML =
-      scores.map((s,i)=> `<li>${i+1}. ${s.name} — ${s.score} pts</li>`).join("");
-  } else {
-    leaderboardList.innerHTML = "<p style='text-align:center'>Belum ada skor</p>";
-  }
+      // Urutkan dari score tertinggi
+      let sorted = data.sort((a, b) => Number(b.score) - Number(a.score));
+
+      // Ambil 10 teratas
+      sorted = sorted.slice(0, 10);
+
+      // Tampilkan ke HTML
+      leaderboardList.innerHTML = sorted
+        .map((s, i) => `<li>${i+1}. ${s.name} — ${s.score} pts</li>`)
+        .join("");
+    })
+    .catch(err => {
+      leaderboardList.innerHTML =
+        "<p style='color:red;text-align:center'>Gagal memuat leaderboard online</p>";
+      console.error("Error:", err);
+    });
 </script>
+
 
 </body>
 </html>
