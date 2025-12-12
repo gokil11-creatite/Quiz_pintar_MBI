@@ -1,24 +1,48 @@
 // QUIZ PINTAR VERSI MBI - main JS (FINAL VERSION)
+
 // === GLOBAL ONLINE LEADERBOARD (SheetDB) ===
+
 console.log('game.js loaded');
 
 function submitScore(name, score) {
-    fetch("https://sheetdb.io/api/v1/mqohml41m1yzb", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            data: [
-                { name: name, score: score }
-            ]
-        })
-    })
-    .then(res => res.json())
-    .then(data => console.log("Score saved:", data))
-    .catch(err => console.error("Error saving score:", err));
+    fetch("https://sheetdb.io/api/v1/mqohml41m1yzb", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            data: [
+                { name: name, score: score }
+            ]
+        })
+    })
+    .then(res => res.json())
+    .then(data => console.log("Score saved:", data))
+    .catch(err => console.error("Error saving score:", err));
+}
+
+/**
+ * Mengambil data skor Leaderboard dari SheetDB (GET request).
+ */
+function loadLeaderboard() {
+    return fetch("https://sheetdb.io/api/v1/mqohml41m1yzb?sort_by=score&sort_order=desc")
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Gagal mengambil data dari SheetDB");
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!Array.isArray(data)) return [];
+            return data.slice(0, 10);
+        })
+        .catch(err => {
+            console.error("Error loading leaderboard:", err);
+            return []; 
+        });
 }
 // =============================================
+
 
 // ===== BACKSOUND & SETTINGS =====
 const bgMusic = new Audio("assets/sounds/bgm.mp3");
@@ -76,8 +100,7 @@ function runLoader(){
           landing.classList.add('show');
         }
 
-        playSound('start');
-
+        // playSound('start'); <-- Dihapus untuk Autoplay Error
       }, 300);
     }
   }, 150);
@@ -86,7 +109,7 @@ function runLoader(){
 // Sound system
 const sounds = {
   start: 'assets/sounds/start.mp3',
-  click: 'assets/sounds/click.mp3',
+  // click: 'assets/sounds/click.mp3', <-- DIHAPUS Sesuai permintaan
   correct: 'assets/sounds/correct.mp3',
   wrong: 'assets/sounds/wrong.mp3',
   gameover: 'assets/sounds/gameover.mp3',
@@ -101,13 +124,23 @@ for(let k in sounds){
     audios[k] = null;
   }
 }
+
 function playSound(name){
   if(!settings.sound) return;
   const a = audios[name];
   if(a){
-    try{ a.currentTime = 0; a.play(); }catch(e){ /* ignore */ }
+    try{ 
+      a.currentTime = 0; 
+      // Menggunakan .catch untuk menangani NotAllowedError dengan lebih aman
+      a.play().catch(error => {
+        console.warn(`Gagal memutar ${name}: ${error.name} - ${error.message}`);
+      });
+    }catch(e){ 
+      console.error(`Error playSound untuk ${name}:`, e.message);
+    }
   } 
 }
+
 function showHelper(img, text, callback) {
   const popup = document.getElementById('helperPopup');
   const imgEl = document.getElementById('helperImg');
@@ -152,109 +185,107 @@ function toggleSound(){
   updateSoundIcon();
 
   if(settings.sound){
-    try{ bgMusic.play(); }catch(e){}
+    // Menggunakan .catch untuk menangani Autoplay Error pada toggle
+    try{ bgMusic.play().catch(e => console.warn("Autoplay BG Music diblokir:", e.message)); }catch(e){}
   } else {
     try{ bgMusic.pause(); }catch(e){}
   }
 
-  playSound('click');
+  // playSound('click'); <-- DIHAPUS
 }
 
+// Navigasi
 function initNavigation(){
   const startBtn = document.getElementById('startBtn');
   const leaderBtn = document.getElementById('leaderBtn');
-  const petunjukBtn = document.getElementById('petunjukBtn'); 
   const soundToggle = document.getElementById('soundToggle');
 
-  // START QUIZ (SUDAH DIPERBAIKI)
+  // START QUIZ 
   if(startBtn) startBtn.addEventListener('click', ()=>{ 
     playSound('start'); 
-    try{ bgMusic.play(); }catch(e){}
+    try{ bgMusic.play(); }catch(e){} // Dibiarkan di sini karena ini user gesture
     openQuiz(); 
   });
   
-  if(leaderBtn) leaderBtn.addEventListener('click', ()=>{ playSound('click'); openLeaderboard(); });
-  // Tombol Petunjuk
-  if(petunjukBtn) petunjukBtn.addEventListener('click', ()=>{ playSound('click'); openGuide(); }); 
+  // Leaderboard
+  // playSound('click') DIHAPUS
+  if(leaderBtn) leaderBtn.addEventListener('click', ()=>{ openLeaderboard(); });
+  
+  // Listener untuk tombol kembali dari Leaderboard
+  const backFromLBBtn = document.getElementById('backFromLB');
+  // playSound('click') DIHAPUS
+  if(backFromLBBtn) backFromLBBtn.addEventListener('click', closeLeaderboard);
   
   if(soundToggle) soundToggle.addEventListener('click', toggleSound);
    
   updateSoundIcon();
 }
 
-// Simple page render functions
-function clearMain(){ document.querySelectorAll('.page').forEach(e=>e.remove()); }
-
-function openGuide(){
-  clearMain();
+// === Navigasi Halaman Leaderboard ===
+function closeLeaderboard(){
+  // playSound('click'); <-- DIHAPUS
   const landing = document.getElementById('landing');
-  const page = document.createElement('div'); page.className = 'page';
-  page.innerHTML = `
-    <div class="modal">
-      <h2>Petunjuk</h2>
-      <p>Di setiap pertanyaan ada 4 jawaban dan hanya 1 jawaban yang benar. Bila anda kesulitan, ada 2 bantuan (AISYAH & DENY). Perhatikan: Setiap sesi hanya boleh menggunakan 1 bantuan. Gunakan dengan bijak. Capai nilai tertinggi Anda dan tunjukkan kemampuan Anda.</p>
-      <button id="backFromGuide" class="big-btn">Kembali</button>
-    </div>
-  `;
-  if(landing) landing.appendChild(page);
-  const back = document.getElementById('backFromGuide');
-  if(back) back.addEventListener('click', ()=>{ playSound('click'); page.remove(); });
+  const lbPage = document.getElementById('leaderboardPage');
+
+  // Sembunyikan Leaderboard
+  if(lbPage) lbPage.classList.add('hidden');
+  
+  // Tampilkan Landing Page
+  if(landing) landing.classList.remove('hidden');
+
+  // Reset loader text (opsional, tapi bagus)
+  const loading = document.getElementById('lbLoading');
+  if(loading) loading.textContent = 'Memuat data...';
 }
+
 function openLeaderboard() {
-    clearMain();
-    const landing = document.getElementById('landing');
-    const page = document.createElement('div');
-    page.className = 'page';
+    const landing = document.getElementById('landing');
+    const lbPage = document.getElementById('leaderboardPage');
+    const loading = document.getElementById('lbLoading');
+    const lb = document.getElementById('lbList');
 
-    page.innerHTML = `
-        <div class="modal">
-            <h2>Leaderboard Global</h2>
-            <div id="lbLoading">Memuat data...</div>
-            <div class="lb-list" id="lbList"></div>
-            <button id="backFromLB" class="big-btn" style="margin-top:12px">Kembali</button>
-        </div>
-    `;
+    // Sembunyikan Landing dan tampilkan Leaderboard
+    if(landing) landing.classList.add('hidden');
+    if(!lbPage) return;
 
-    if (landing) landing.appendChild(page);
+    lbPage.classList.remove('hidden');
+    lbPage.classList.add('show'); // Untuk transisi jika ada
 
-    const backBtn = document.getElementById('backFromLB');
-    if (backBtn) backBtn.addEventListener('click', () => {
-        playSound('click');
-        page.remove();
-    });
+    // Reset tampilan Leaderboard sebelum memuat
+    if (loading) loading.style.display = 'block';
+    if (lb) lb.innerHTML = '';
+    
+    // === AMBIL DATA GLOBAL DARI SHEETDB ===
+    loadLeaderboard().then(data => {
+        if (loading) loading.style.display = 'none'; // Sembunyikan loading
+        if (!lb) return;
 
-    // === AMBIL DATA GLOBAL DARI SHEETDB ===
-    loadLeaderboard().then(data => {
-        const lb = document.getElementById('lbList');
-        const loading = document.getElementById('lbLoading');
+        if (!data || data.length === 0) {
+            lb.innerHTML = '<div class="empty">Belum ada data leaderboard global.</div>';
+            return;
+        }
 
-        if (loading) loading.remove();
-
-        if (!lb) return;
-
-        if (!data || data.length === 0) {
-            lb.innerHTML = '<div class="empty">Belum ada data leaderboard global.</div>';
-            return;
-        }
-
-        lb.innerHTML = data
-            .map((r, i) => `
-                <div class="lb-row">${i + 1}. <b>${escapeHtml(r.name)}</b> - ${r.score}</div>
-            `)
-            .join('');
-    });
+        lb.innerHTML = data
+            .map((r, i) => `
+                <div class="lb-row">${i + 1}. <b>${escapeHtml(r.name)}</b> - ${r.score}</div>
+            `)
+            .join('');
+    });
 }
-
 
 function openQuiz(){
   const landing = document.getElementById('landing');
   if(landing) landing.classList.add('hidden'); // sembunyikan landing
 
+  // Pastikan Leaderboard tersembunyi jika ada
+  const lbPage = document.getElementById('leaderboardPage');
+  if(lbPage) lbPage.classList.add('hidden');
+
   const quizPage = document.getElementById('quizPage');
-  if(!quizPage) return;
-  quizPage.innerHTML = "";
-  quizPage.classList.remove('hidden');
-  quizPage.classList.add('show');
+  // KRITIS: Hapus konten lama di quizPage sebelum menambahkan yang baru
+  if(quizPage) quizPage.innerHTML = '';
+  if(quizPage) quizPage.classList.remove('hidden');
+
 
   const page = document.createElement('div');
   page.className = 'quiz-area page-transition';
@@ -284,41 +315,38 @@ function openQuiz(){
     page.classList.add('show');
   }, 50);
 
-// Di dalam fungsi openQuiz()...
-
   const backBtn = document.getElementById('backToHome');
   if(backBtn){
     backBtn.addEventListener('click', ()=>{
-      playSound('click');
-      
-      // === LOGIKA BARU: SIMPAN SKOR SAAT KELUAR DAN RESET ===
-      const currentScore = session.score;
-      if (currentScore > 0) {
-          // Hanya simpan jika skor lebih dari 0
-          saveToLeaderboard(promptForName(currentScore), currentScore);
-      }
-      
-      // Pastikan skor sesi direset setelah disimpan
-      session.score = 0;
-      session.usedHelp = false; 
-      // =======================================================
-      
+      // playSound('click'); <-- DIHAPUS
+      
+      // === LOGIKA BARU: SIMPAN SKOR SAAT KELUAR DAN RESET ===
+      const currentScore = session.score;
+      if (currentScore > 0) {
+          saveToLeaderboard(promptForName(currentScore), currentScore);
+      }
+      
+      session.score = 0;
+      session.usedHelp = false; 
+      // =======================================================
+      
       page.classList.remove('show');
       page.classList.add('fade-out');
 
       setTimeout(()=>{
         quizPage.classList.add('hidden');
         if(landing) landing.classList.remove('hidden');
-        
+        
         // Update tampilan Best Score di Landing Page jika diperlukan
         const bestScoreEl = document.getElementById('bestScore');
-        if(bestScoreEl) bestScoreEl.textContent = settings.bestScore; 
+        if(bestScoreEl) bestScoreEl.textContent = settings.bestScore; 
       }, 350);
     });
   }
 
   startQuiz();
 }
+
 
 // QUESTIONS (20 sample)
 const QUESTIONS = [
@@ -343,6 +371,7 @@ const QUESTIONS = [
   {"q":"Angka Romawi untuk 10?","a":["V","X","L","C"],"c":1},
   {"q":"Warna campuran merah + biru?","a":["Hijau","Ungu","Kuning","Oranye"],"c":1}
 ];
+
 
 // helpers
 function shuffle(arr){ let a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
@@ -371,8 +400,8 @@ function renderQuestion(){
   if(session.queue.length === 0){ endGame(); return; }
   session.current = session.queue.shift();
   qbox.textContent = session.current.q;
-ansbox.innerHTML = ''; 
-  
+  ansbox.innerHTML = ''; 
+  
   const indexedChoices = session.current.a.map((text, index) => ({
     text,
     isCorrect: index === session.current.c
@@ -383,18 +412,16 @@ ansbox.innerHTML = '';
   // === BLOK KODE YANG MEMBUAT TOMBOL DAN MELAMPIRKAN KLIK ===
   shuffledChoices.forEach(choice => {
     const btn = document.createElement('button');
-    btn.className = 'answer-btn big-btn'; // KRITIS: Kelas harus ada
+    btn.className = 'answer-btn big-btn'; 
     btn.textContent = choice.text;
-    
-    // KRITIS: Langsung panggil checkAnswer()
+    
     btn.addEventListener("click", () => {
-      playSound('click');
-      // Menonaktifkan semua tombol setelah diklik (agar pemain tidak klik berkali-kali)
+      // playSound('click'); <-- DIHAPUS
       document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
       checkAnswer(btn.textContent.trim());
     });
-    
-    ansbox.appendChild(btn); // Tambahkan tombol ke DOM
+    
+    ansbox.appendChild(btn); 
   });
   // ==========================================================
 
@@ -402,42 +429,36 @@ ansbox.innerHTML = '';
   if(curScoreEl) curScoreEl.textContent = session.score;
 }
 
-
-
 function checkAnswer(choice) {
-    const correctAnswerText = session.current.a[session.current.c];
+    const correctAnswerText = session.current.a[session.current.c];
 
-    if (choice.trim() === correctAnswerText.trim()) {
-        session.score += 10; // ✅ SKOR DITAMBAHKAN
-        playSound("correct");
-        flashCorrect(correctAnswerText);
-    } else {
-        playSound("wrong");
-        flashCorrect(correctAnswerText); 
-    }
+    if (choice.trim() === correctAnswerText.trim()) {
+        session.score += 10; 
+        playSound("correct");
+        flashCorrect(correctAnswerText);
+    } else {
+        playSound("wrong");
+        flashCorrect(correctAnswerText); 
+    }
 
-    const curScoreEl = document.getElementById("curScore");
-    if (curScoreEl) {
-        curScoreEl.textContent = session.score; 
-    }
+    const curScoreEl = document.getElementById("curScore");
+    if (curScoreEl) {
+        curScoreEl.textContent = session.score; 
+    }
 
-    // Lanjut ke pertanyaan berikutnya
-    setTimeout(() => {
-        // ✅ AKTIFKAN KEMBALI SEMUA TOMBOL
-        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = false);
-        renderQuestion();
-    }, 4000); 
+    // Lanjut ke pertanyaan berikutnya
+    setTimeout(() => {
+        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = false);
+        renderQuestion();
+    }, 4000); 
 }
-
 
 function flashCorrect(choiceText){
   const buttons = document.querySelectorAll('.answer-btn');
   buttons.forEach(b=>{
     if(b.textContent.trim() === choiceText.trim()){
-      // 1. Tambahkan kelas yang akan mendefinisikan kedipan
       b.classList.add('correct-flash');
-      
-      // 2. Hapus kelas setelah 600ms (agar kembali ke gaya neon semula)
+      
       setTimeout(() => {
         b.classList.remove('correct-flash');
       }, 600);
@@ -534,46 +555,42 @@ function showAd(callback){
 }
 
 function endGame(){
-function endGame(){
-  playSound('gameover');
+  playSound('gameover');
 
-  const finalScore = session.score;
-  alert('Permainan selesai! Skor Anda: ' + finalScore);
+  const finalScore = session.score;
+  alert('Permainan selesai! Skor Anda: ' + finalScore);
 
-  // update best score
-  if(finalScore > settings.bestScore){
-    settings.bestScore = finalScore;
-    localStorage.setItem('q_mbi_best', String(settings.bestScore));
-    const bestScoreEl = document.getElementById('bestScore');
-    if(bestScoreEl) bestScoreEl.textContent = settings.bestScore;
-  }
+  // update best score
+  if(finalScore > settings.bestScore){
+    settings.bestScore = finalScore;
+    localStorage.setItem('q_mbi_best', String(settings.bestScore));
+    const bestScoreEl = document.getElementById('bestScore');
+    if(bestScoreEl) bestScoreEl.textContent = settings.bestScore;
+  }
 
-  // simpan ke leaderboard lokal
-  const playerName = promptForName(finalScore);
-  saveToLeaderboard(playerName, finalScore);
+  // simpan ke leaderboard lokal
+  const playerName = promptForName(finalScore);
+  saveToLeaderboard(playerName, finalScore);
 
-  // === SIMPAN JUGA KE LEADERBOARD GLOBAL (ONLINE) ===
-  submitScore(playerName, finalScore);
+  // === SIMPAN JUGA KE LEADERBOARD GLOBAL (ONLINE) ===
+  submitScore(playerName, finalScore);
 
-  // Kembali ke menu (komentar: hanya catatan)
-  // Kembali ke menu
+  // Kembalikan tampilan ke menu / landing
+  const quizPage = document.getElementById('quizPage');
+  const landing = document.getElementById('landing');
+  if(quizPage) quizPage.classList.add('hidden');
+  if(landing) landing.classList.remove('hidden');
 
-  // Kembalikan tampilan ke menu / landing
-  const quizPage = document.getElementById('quizPage');
-  const landing = document.getElementById('landing');
-  if(quizPage) quizPage.classList.add('hidden');
-  if(landing) landing.classList.remove('hidden');
-
-  // === TAMBAHAN: RESET SESI SAAT GAME OVER ===
-  session.score = 0;
-  session.usedHelp = false;
+  // === TAMBAHAN: RESET SESI SAAT GAME OVER ===
+  session.score = 0;
+  session.usedHelp = false;
 }
 
 // helper for prompting name safely
 function promptForName(finalScore){
   try{
     const defaultName = "Pemain";
-    const raw = prompt("Skor Anda: " + finalScore + "\\nMasukkan nama untuk leaderboard (maks 20 char):", defaultName) || defaultName;
+    const raw = prompt("Skor Anda: " + finalScore + "\nMasukkan nama untuk leaderboard (maks 20 char):", defaultName) || defaultName;
     return String(raw).substring(0,20);
   }catch(e){
     return "Pemain";
@@ -615,8 +632,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initNavigation();
   runLoader();
 });
-
-// Akhir dari file js/game.js
-
-
-
